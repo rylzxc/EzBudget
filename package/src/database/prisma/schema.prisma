@@ -1,0 +1,38 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                      Int      @id @default(autoincrement())
+  email                   String   @unique
+  name                    String?
+  password                String  
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  
+  // Step 1 fields - Personal Information
+  age                     Int      @default(0)
+  number_of_kids          Int      @default(0)
+  monthly_take_home       Float    @default(0)
+  
+  // Step 2 fields - Life Situation
+  planning_to_buy_home    Boolean  @default(false)
+  repaying_home_loans     Boolean  @default(false)
+  supporting_aged_parents Boolean  @default(false)
+  
+  // Step 3 fields - Financial Details
+  transport_expenditure   Float    @default(0)
+  food_expenditure        Float    @default(0)
+  housing_expenditure     Float    @default(0)
+  emergency_funds         Float    @default(0)
+  
+  // Step 4 fields - Financial Goals
+  main_financial_goal     String?
+  budget_flexibility      String?
+  financial_struggle      String?
+}

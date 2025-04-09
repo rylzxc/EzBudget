@@ -62,7 +62,7 @@ const MSidebar = ({
             }}
           >
             <Sidebar
-              width={'270px'}
+              width={'230px'}
               collapsewidth="80px"
               open={isSidebarOpen}
               themeColor="#5d87ff"
@@ -72,13 +72,12 @@ const MSidebar = ({
               {/* ------------------------------------------- */}
               {/* Logo */}
               {/* ------------------------------------------- */}
-              <Logo img="/images/logos/dark-logo.svg" />
+                <Logo img="/images/logos/ez-small.png" />
               <Box>
                 {/* ------------------------------------------- */}
                 {/* Sidebar Items */}
                 {/* ------------------------------------------- */}
                 <SidebarItems />
-                <Upgrade />
               </Box>
             </Sidebar >
           </Box>
