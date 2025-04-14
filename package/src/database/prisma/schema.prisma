@@ -35,4 +35,16 @@ model User {
   main_financial_goal     String?
   budget_flexibility      String?
   financial_struggle      String?
+
+  transactions            Transaction[]
+}
+
+model Transaction {
+  id        String   @id @default(uuid())
+  timestamp DateTime
+  merchant  String
+  amount    Float
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
 }

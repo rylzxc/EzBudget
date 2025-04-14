@@ -26,6 +26,7 @@
     "eslint-config-next": "13.4.12",
     "lodash": "4.17.21",
     "next": "14.2.3",
+    "node-nlp": "^5.0.0-alpha.5",
     "prisma": "^6.6.0",
     "react": "18.2.0",
     "react-apexcharts": "1.4.1",

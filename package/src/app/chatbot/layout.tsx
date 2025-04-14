@@ -7,7 +7,7 @@ const MainWrapper = styled("div")(() => ({
   display: "flex",
   minHeight: "100vh",
   width: "100%",
-  overflow: "hidden" // Add this to prevent initial scroll
+  overflow: "hidden"
 }));
 
 const PageWrapper = styled("div")(() => ({
@@ -15,8 +15,8 @@ const PageWrapper = styled("div")(() => ({
   flexGrow: 1,
   flexDirection: "column",
   width: "100%",
-  height: "100vh", // Changed from min-height
-  overflowY: "auto" // Controlled scrolling
+  height: "100vh",
+  overflowY: "auto"
 }));
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   
-  // Optional: Scroll to top on mount
+  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -40,10 +40,7 @@ export default function RootLayout({
         onSidebarClose={() => setMobileSidebarOpen(false)}
       />
       
-      <PageWrapper className="page-wrapper">
-        {/* Include Header if you're using it */}
-        {/* <Header toggleMobileSidebar={() => setMobileSidebarOpen(true)} /> */}
-        
+      <PageWrapper className="page-wrapper">        
         <Container
           sx={{
             paddingTop: "20px",
