@@ -24,12 +24,17 @@ model User {
   planning_to_buy_home    Boolean  @default(false)
   repaying_home_loans     Boolean  @default(false)
   supporting_aged_parents Boolean  @default(false)
+  owns_car                Boolean  @default(false)
   
   // Step 3 fields - Financial Details
   transport_expenditure   Float    @default(0)
   food_expenditure        Float    @default(0)
   housing_expenditure     Float    @default(0)
   emergency_funds         Float    @default(0)
+  investment_expenditure  Float    @default(0)
+  insurance_expenditure   Float    @default(0)
+  other_needs_expenditure Float    @default(0)
+  monthly_savings         Float    @default(0)
   
   // Step 4 fields - Financial Goals
   main_financial_goal     String?
