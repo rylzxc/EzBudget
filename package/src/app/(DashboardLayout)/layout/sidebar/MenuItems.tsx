@@ -1,4 +1,4 @@
-import { ChatBubbleOutlineRounded } from "@mui/icons-material";
+import { ChatBubbleOutlineRounded, AttachMoneyOutlined, AttachMoneyRounded } from "@mui/icons-material";
 import {
   IconAperture,
   IconCopy,
@@ -28,6 +28,12 @@ const Menuitems = [
   title: "Chatbot",
   icon: ChatBubbleOutlineRounded,
   href: "/chatbot",
+  },
+  {
+    id: uniqueId(),
+    title: "Savings",
+    icon: AttachMoneyRounded,
+    href: "/savings",
   },
   // {
   //   navlabel: true,
