@@ -7,6 +7,15 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum TransactionCategory {
+  FOOD
+  TRANSPORT
+  HOUSING
+  INSURANCE
+  INVESTMENT
+  OTHER
+}
+
 model User {
   id                      Int      @id @default(autoincrement())
   email                   String   @unique
@@ -49,6 +58,7 @@ model Transaction {
   timestamp DateTime
   merchant  String
   amount    Float
+  category  TransactionCategory?
 
   userId    Int
   user      User     @relation(fields: [userId], references: [id])

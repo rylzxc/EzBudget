@@ -5,9 +5,8 @@ import PageContainer from "@/app/(DashboardLayout)/components/container/PageCont
 import SalesOverview from "@/app/(DashboardLayout)/components/dashboard/SalesOverview";
 import YearlyBreakup from "@/app/(DashboardLayout)/components/dashboard/YearlyBreakup";
 import RecentTransactions from "@/app/(DashboardLayout)/components/dashboard/RecentTransactions";
-import ProductPerformance from "@/app/(DashboardLayout)/components/dashboard/ProductPerformance";
-import Blog from "@/app/(DashboardLayout)/components/dashboard/Blog";
 import MonthlyEarnings from "@/app/(DashboardLayout)/components/dashboard/MonthlyEarnings";
+import ExpertRecommendations from "./components/dashboard/ExpertRecommendations";
 
 const Dashboard = () => {
   return (
@@ -30,6 +29,9 @@ const Dashboard = () => {
           <Grid item xs={12} lg={6}>
             <RecentTransactions />
           </Grid>
+          {/* <Grid item xs={12} lg={6}>
+            <ExpertRecommendations user={user} />
+          </Grid> */}
         </Grid>
       </Box>
     </PageContainer>
