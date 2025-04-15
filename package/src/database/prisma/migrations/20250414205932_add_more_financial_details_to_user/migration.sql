@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "insurance_expenditure" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN     "investment_expenditure" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN     "monthly_savings" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN     "other_needs_expenditure" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN     "owns_car" BOOLEAN NOT NULL DEFAULT false;
