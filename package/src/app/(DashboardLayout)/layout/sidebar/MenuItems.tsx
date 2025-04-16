@@ -1,13 +1,9 @@
-import { ChatBubbleOutlineRounded, AttachMoneyOutlined, AttachMoneyRounded } from "@mui/icons-material";
 import {
-  IconAperture,
-  IconCopy,
-  IconLayoutDashboard,
-  IconLogin,
-  IconMoodHappy,
-  IconTypography,
-  IconUserPlus,
-} from "@tabler/icons-react";
+  ChatBubbleOutlineRounded,
+  AttachMoneyOutlined,
+  QuestionMarkOutlined,
+} from "@mui/icons-material";
+import { IconLayoutDashboard } from "@tabler/icons-react";
 
 import { uniqueId } from "lodash";
 
@@ -24,16 +20,22 @@ const Menuitems = [
     href: "/",
   },
   {
-  id: uniqueId(),
-  title: "Chatbot",
-  icon: ChatBubbleOutlineRounded,
-  href: "/chatbot",
+    id: uniqueId(),
+    title: "Chatbot",
+    icon: ChatBubbleOutlineRounded,
+    href: "/chatbot",
   },
   {
     id: uniqueId(),
     title: "Savings",
-    icon: AttachMoneyRounded,
+    icon: AttachMoneyOutlined,
     href: "/savings",
+  },
+  {
+    id: uniqueId(),
+    title: "What-If",
+    icon: QuestionMarkOutlined,
+    href: "/what-if",
   },
   // {
   //   navlabel: true,

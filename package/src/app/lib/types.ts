@@ -13,7 +13,7 @@ export interface Transaction {
   timestamp: Date;
   merchant: string;
   amount: number;
-  category: TransactionCategory;
+  category: TransactionCategory | null;
   userId: number;
 }
 

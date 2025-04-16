@@ -118,7 +118,7 @@ export async function analyzeSpending(
       timestamp: { gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) }, // Last 90 days
     },
     orderBy: { timestamp: "desc" },
-  });
+  }) as unknown as Transaction[];
 
   // Step 3: Generate insights
   switch (analysisType) {

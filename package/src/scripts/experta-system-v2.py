@@ -65,7 +65,40 @@
 #
 
 # %%
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from experta import KnowledgeEngine, Fact, Rule, MATCH, TEST
+from csp_solver_v4 import optimize_budget_with_weighted_quadratic_loss_custom_units
+
+app = FastAPI()
+
+# Allow CORS for your frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # frontend url
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+class BudgetInput(BaseModel):
+    age: int
+    number_of_kids: int
+    monthly_take_home: float
+    planning_to_buy_home: bool
+    repaying_home_loans: bool
+    supporting_aged_parents: bool
+    owns_car: bool
+    transport_expenditure: float
+    food_expenditure: float
+    housing_expenditure: float
+    insurance_expenditure: float
+    other_needs_expenditure: float
+    emergency_funds: float
+    investment_expenditure: float
+    monthly_savings: float
 
 class BudgetInfo(Fact):
     """Holds the user's budget-related information."""
@@ -90,6 +123,10 @@ class BudgetInfo(Fact):
 
 
 class BudgetAdvisor(KnowledgeEngine):
+    def __init__(self):
+        super().__init__()
+        self.recommendations = []
+
     # ---------------- Needs Analysis Rules ----------------
     @Rule(BudgetInfo(owns_car=MATCH.owns_car,
                      transport_expenditure=MATCH.transport),
@@ -97,13 +134,13 @@ class BudgetAdvisor(KnowledgeEngine):
                (not owns_car) and (transport > 150)),
           salience=9)
     def rule_public_transport(self, owns_car, transport):
-        print("Your transport spendings are above average. Consider taking public transport instead of using private options.")
+        self.recommendations.append("Your transport spendings are above average. Consider taking public transport instead of using private options.")
 
     @Rule(BudgetInfo(insurance_expenditure=MATCH.insurance, monthly_take_home=MATCH.take_home),
           TEST(lambda insurance, take_home: insurance > 0.15 * take_home),
           salience=9)
     def rule_reduce_insurance(self, insurance, take_home):
-        print("Your spending on insurance is too high! " \
+        self.recommendations.append("Your spending on insurance is too high! " \
         "The recommended spending on insurance is maximum 15% of your take home-salary.")
 
     @Rule(BudgetInfo(transport_expenditure=MATCH.transport,
@@ -116,21 +153,21 @@ class BudgetAdvisor(KnowledgeEngine):
                (transport + food + housing + insurance + others) > 0.5 * take_home),
           salience=10)
     def rule_reduce_needs(self, transport, food, housing, insurance, others, take_home):
-        print("Your spending on necessities are too high! " \
+        self.recommendations.append("Your spending on necessities are too high! " \
         "The recommended spending on needs is maximum 50% of your take-home salary.")
 
     @Rule(BudgetInfo(food_expenditure=MATCH.food, monthly_take_home=MATCH.take_home),
           TEST(lambda food, take_home: food > 0.15 * take_home),
           salience=9)
     def rule_reduce_food(self, food, take_home):
-        print("Your spending on food are too high! " \
+        self.recommendations.append("Your spending on food are too high! " \
         "The recommended spending on food is maximum 15% of your take-home salary.")
 
     @Rule(BudgetInfo(housing_expenditure=MATCH.housing, monthly_take_home=MATCH.take_home),
           TEST(lambda housing, take_home: housing > 0.35 * take_home),
           salience=9)
     def rule_housing_alternatives(self, housing, take_home):
-        print("You may want to consider looking for alternative housing options " \
+        self.recommendations.append("You may want to consider looking for alternative housing options " \
         "as housing costs are over 35% of your take-home salary.")
 
     # ---------------- Wants Analysis Rule ----------------
@@ -145,7 +182,7 @@ class BudgetAdvisor(KnowledgeEngine):
                (take_home - savings - transport - food - housing - insurance - others) > 0.3 * take_home),
           salience=8)
     def rule_reduce_wants(self, transport, food, housing, insurance, others, savings, take_home):
-        print("Your spending on wants are too high! " \
+        self.recommendations.append("Your spending on wants are too high! " \
         "The recommended spending on wants is maximum 30% of your take-home salary.")
 
     # ---------------- Savings Analysis Rules ----------------
@@ -158,17 +195,17 @@ class BudgetAdvisor(KnowledgeEngine):
           salience=6)
     def rule_investment_recommendations(self, age, number_of_kids, buy_home):
         if age < 65:
-            print("Consider investing in long-term plans (e.g. ETFs) for retirement.")
+            self.recommendations.append("Consider investing in long-term plans (e.g. ETFs) for retirement.")
         if number_of_kids > 0:
-            print("Consider short-term investment plans for your kids' tertiary education.")
+            self.recommendations.append("Consider short-term investment plans for your kids' tertiary education.")
         if buy_home:
-            print("Consider short-term investment plans to help with home loan repayment.")
+            self.recommendations.append("Consider short-term investment plans to help with home loan repayment.")
 
     @Rule(BudgetInfo(monthly_savings=MATCH.savings, monthly_take_home=MATCH.take_home),
           TEST(lambda savings, take_home: savings < 0.2 * take_home),
           salience=7)
     def rule_increase_savings(self, savings, take_home):
-        print("Your savings are too low! You are recommended to save 20% of your take-home salary. " \
+        self.recommendations.append("Your savings are too low! You are recommended to save 20% of your take-home salary. " \
         "You can increase your monthly savings by reducing spending on needs or wants.")
 
     # ---------------- Emergency Funds Analysis Rules ----------------
@@ -176,7 +213,7 @@ class BudgetAdvisor(KnowledgeEngine):
           TEST(lambda funds, take_home, savings: funds < 3 * (take_home - savings)),
           salience=5)
     def rule_emergency_funds_low(self, funds, take_home, savings):
-        print("Financial experts recommend maintaining an emergency fund covering 3-6 months of your monthly expenses. " \
+        self.recommendations.append("Financial experts recommend maintaining an emergency fund covering 3-6 months of your monthly expenses. " \
         "Currently, your savings fall short of the 3-month minimum. " \
         "To avoid financial stress during unexpected events, please consider increasing your savings as soon as possible.")
 
@@ -184,32 +221,64 @@ class BudgetAdvisor(KnowledgeEngine):
           TEST(lambda funds, take_home, savings: funds > 3 * (take_home - savings) and funds < 6 * (take_home - savings)),
           salience=5)
     def rule_emergency_funds_medium(self, funds, take_home, savings):
-        print("Financial experts recommend maintaining an emergency fund covering 3-6 months of your monthly expenses. " \
+        self.recommendations.append("Financial experts recommend maintaining an emergency fund covering 3-6 months of your monthly expenses. " \
         "Build up your emergency funds to cover at least 6 months of your current expenses.")
 
-
-if __name__ == "__main__":
+@app.post("/analyze-budget")
+async def analyze_budget(budget_data: BudgetInput):
     engine = BudgetAdvisor()
     engine.reset()
-
-    # Example inputs – these values could be gathered interactively or via a user interface.
-    engine.declare(BudgetInfo(
-        age=30,
-        number_of_kids=1,
-        monthly_take_home=4000,
-        planning_to_buy_home=True,
-        repaying_home_loans=False,
-        supporting_aged_parents=False,
-        owns_car=True,
-        transport_expenditure=100,
-        food_expenditure=100,
-        housing_expenditure=1000,
-        insurance_expenditure=100,
-        other_needs_expenditure=700,
-        emergency_funds=6000,
-        investment_expenditure=300,
-        monthly_savings=700
-    ))
-
+    engine.declare(BudgetInfo(**budget_data.dict()))
     engine.run()
+    
+    return {
+        "recommendations": engine.recommendations,
+        "status": "success"
+    }
+
+@app.post("/optimize-budget")
+async def optimize_budget(budget_data: BudgetInput, weights: dict = None):
+    # Convert all float fields to integers
+    budget_dict = budget_data.dict()
+    for key, value in budget_dict.items():
+        if isinstance(value, float):
+            budget_dict[key] = int(value)
+    
+    # Default weights if none provided
+    if weights is None:
+        weights = {
+            'transport': 1,
+            'food': 1,
+            'housing': 1,
+            'insurance': 1,
+            'other_needs': 1,
+            'savings': 1,
+            'investments': 1
+        }
+    
+    # Convert weights to integers if needed
+    weight_mapping = {
+        'transport_expenditure': int(weights['transport']),
+        'food_expenditure': int(weights['food']),
+        'housing_expenditure': int(weights['housing']),
+        'insurance_expenditure': int(weights['insurance']),
+        'other_needs_expenditure': int(weights['other_needs']),
+        'monthly_savings': int(weights['savings']),
+        'investment_expenditure': int(weights['investments'])
+    }
+    
+    # Run optimization with custom weights
+    optimization_result, _ = optimize_budget_with_weighted_quadratic_loss_custom_units(
+        budget_dict,
+        custom_weights=weight_mapping
+    )
+    
+    return {
+        "optimization": optimization_result,
+        "status": "success"
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
