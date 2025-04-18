@@ -14,6 +14,7 @@ import {
   Slider,
   FormControlLabel,
   Switch,
+  TextField,
 } from "@mui/material";
 import { getUser } from "@/app/lib/fetchUser";
 import { User } from "@prisma/client";
@@ -33,16 +34,22 @@ interface BudgetBreakdown {
   savingsPercentage: number;
 }
 
-interface OptimizationResult {
+interface EditableBudget {
+  age: number;
+  number_of_kids: number;
+  monthly_take_home: number;
+  planning_to_buy_home: boolean;
+  repaying_home_loans: boolean;
+  supporting_aged_parents: boolean;
+  owns_car: boolean;
   transport_expenditure: number;
   food_expenditure: number;
   housing_expenditure: number;
   insurance_expenditure: number;
   other_needs_expenditure: number;
+  emergency_funds: number;
   investment_expenditure: number;
   monthly_savings: number;
-  total_needs: number;
-  total_wants: number;
 }
 
 interface WeightSettings {
@@ -77,6 +84,23 @@ export default function WhatIfPage() {
   const [currentTab, setCurrentTab] = useState<"analysis" | "optimization">(
     "analysis"
   );
+  const [editableBudget, setEditableBudget] = useState<EditableBudget>({
+    age: 0,
+    number_of_kids: 0,
+    monthly_take_home: 0,
+    planning_to_buy_home: false,
+    repaying_home_loans: false,
+    supporting_aged_parents: false,
+    owns_car: false,
+    transport_expenditure: 0,
+    food_expenditure: 0,
+    housing_expenditure: 0,
+    insurance_expenditure: 0,
+    other_needs_expenditure: 0,
+    emergency_funds: 0,
+    investment_expenditure: 0,
+    monthly_savings: 0,
+  });
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -84,6 +108,23 @@ export default function WhatIfPage() {
         const user = await getUser(6);
         if (!user) throw new Error("No user found");
         setUser(user);
+        setEditableBudget({
+          age: user.age,
+          number_of_kids: user.number_of_kids,
+          monthly_take_home: user.monthly_take_home,
+          planning_to_buy_home: user.planning_to_buy_home,
+          repaying_home_loans: user.repaying_home_loans,
+          supporting_aged_parents: user.supporting_aged_parents,
+          owns_car: user.owns_car,
+          transport_expenditure: user.transport_expenditure,
+          food_expenditure: user.food_expenditure,
+          housing_expenditure: user.housing_expenditure,
+          insurance_expenditure: user.insurance_expenditure,
+          other_needs_expenditure: user.other_needs_expenditure,
+          emergency_funds: user.emergency_funds,
+          investment_expenditure: user.investment_expenditure,
+          monthly_savings: user.monthly_savings,
+        });
         calculateBudgetBreakdown(user);
       } catch (err) {
         setError(
@@ -91,7 +132,6 @@ export default function WhatIfPage() {
         );
       }
     };
-
     fetchUser();
   }, []);
 
@@ -115,29 +155,13 @@ export default function WhatIfPage() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8000/optimize-budget", {
+      const response = await fetch("http://localhost:8001/optimize-budget", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          budget_data: {
-            age: user.age,
-            number_of_kids: user.number_of_kids,
-            monthly_take_home: user.monthly_take_home,
-            planning_to_buy_home: user.planning_to_buy_home,
-            repaying_home_loans: user.repaying_home_loans,
-            supporting_aged_parents: user.supporting_aged_parents,
-            owns_car: user.owns_car,
-            transport_expenditure: user.transport_expenditure,
-            food_expenditure: user.food_expenditure,
-            housing_expenditure: user.housing_expenditure,
-            insurance_expenditure: user.insurance_expenditure,
-            other_needs_expenditure: user.other_needs_expenditure,
-            emergency_funds: user.emergency_funds,
-            investment_expenditure: user.investment_expenditure,
-            monthly_savings: user.monthly_savings,
-          },
+          budget_data: editableBudget,
           weights: useCustomWeights ? weights : undefined,
         }),
       });
@@ -153,6 +177,48 @@ export default function WhatIfPage() {
       setLoading(false);
     }
   };
+
+  const handleBudgetChange = (field: keyof EditableBudget, value: any) => {
+    setEditableBudget((prev) => ({
+      ...prev,
+      [field]: typeof value === "string" ? parseFloat(value) || 0 : value,
+    }));
+  };
+
+  // Add this component to render editable fields
+  const BudgetInputField = ({
+    label,
+    field,
+    type = "number",
+  }: {
+    label: string;
+    field: keyof EditableBudget;
+    type?: string;
+  }) => (
+    <Box sx={{ mb: 2 }}>
+      <Typography gutterBottom>{label}</Typography>
+      {type === "number" ? (
+        <TextField
+          fullWidth
+          type="number"
+          value={editableBudget[field]}
+          onChange={(e) => handleBudgetChange(field, e.target.value)}
+          variant="outlined"
+          size="small"
+        />
+      ) : (
+        <FormControlLabel
+          control={
+            <Switch
+              checked={editableBudget[field] as boolean}
+              onChange={(e) => handleBudgetChange(field, e.target.checked)}
+            />
+          }
+          label={editableBudget[field] ? "Yes" : "No"}
+        />
+      )}
+    </Box>
+  );
 
   const renderWeightSlider = (
     category: keyof WeightSettings,
@@ -213,7 +279,7 @@ export default function WhatIfPage() {
     setOptimization(null);
 
     try {
-      const response = await fetch("http://localhost:8000/analyze-budget", {
+      const response = await fetch("http://localhost:8001/analyze-budget", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -303,7 +369,15 @@ export default function WhatIfPage() {
           <Typography>Current: ${current.toFixed(2)}</Typography>
           <Typography>Optimized: ${optimized.toFixed(2)}</Typography>
         </Box>
-        <Typography color={difference >= 0 ? "success.main" : "error.main"}>
+        <Typography
+          color={
+            difference > 0
+              ? "success.main"
+              : difference < 0
+              ? "error.main"
+              : undefined
+          }
+        >
           {difference >= 0 ? "+" : ""}
           {difference.toFixed(2)} ({differencePercent.toFixed(1)}%)
         </Typography>
@@ -500,8 +574,75 @@ export default function WhatIfPage() {
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              Budget Optimization Settings
+              Customize Budget Before Optimization
             </Typography>
+
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle1" color="primary" gutterBottom>
+                  Personal Information
+                </Typography>
+                <BudgetInputField label="Age" field="age" />
+                <BudgetInputField
+                  label="Number of Kids"
+                  field="number_of_kids"
+                />
+                <BudgetInputField
+                  label="Monthly Take Home Pay"
+                  field="monthly_take_home"
+                />
+                <BudgetInputField
+                  label="Owns Car"
+                  field="owns_car"
+                  type="checkbox"
+                />
+                <BudgetInputField
+                  label="Supporting Aged Parents"
+                  field="supporting_aged_parents"
+                  type="checkbox"
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle1" color="primary" gutterBottom>
+                  Expenses
+                </Typography>
+                <BudgetInputField
+                  label="Transport"
+                  field="transport_expenditure"
+                />
+                <BudgetInputField label="Food" field="food_expenditure" />
+                <BudgetInputField label="Housing" field="housing_expenditure" />
+                <BudgetInputField
+                  label="Insurance"
+                  field="insurance_expenditure"
+                />
+                <BudgetInputField
+                  label="Other Needs"
+                  field="other_needs_expenditure"
+                />
+                <BudgetInputField
+                  label="Emergency Funds"
+                  field="emergency_funds"
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Typography variant="subtitle1" color="primary" gutterBottom>
+                  Savings & Investments
+                </Typography>
+                <BudgetInputField
+                  label="Investments"
+                  field="investment_expenditure"
+                />
+                <BudgetInputField
+                  label="Monthly Savings"
+                  field="monthly_savings"
+                />
+              </Grid>
+            </Grid>
+
+            <Divider sx={{ my: 3 }} />
 
             <FormControlLabel
               control={
@@ -570,7 +711,21 @@ export default function WhatIfPage() {
                   current={user?.food_expenditure}
                   optimized={optimization.food_expenditure}
                 />
-                {/* Add other needs categories */}
+                <BudgetAllocationItem
+                  label="Housing"
+                  current={user?.housing_expenditure}
+                  optimized={optimization.housing_expenditure}
+                />
+                <BudgetAllocationItem
+                  label="Insurance"
+                  current={user?.insurance_expenditure}
+                  optimized={optimization.insurance_expenditure}
+                />
+                <BudgetAllocationItem
+                  label="Other Needs"
+                  current={user?.other_needs_expenditure}
+                  optimized={optimization.other_needs_expenditure}
+                />
               </Grid>
 
               <Grid item xs={12} md={6}>
@@ -596,8 +751,13 @@ export default function WhatIfPage() {
                   current={
                     user?.monthly_take_home -
                     user?.housing_expenditure -
+                    user?.transport_expenditure -
+                    user?.food_expenditure -
+                    user?.insurance_expenditure -
+                    user?.investment_expenditure -
+                    user?.other_needs_expenditure -
                     user?.monthly_savings
-                  } // Example calculation
+                  }
                   optimized={optimization.total_wants}
                 />
               </Grid>

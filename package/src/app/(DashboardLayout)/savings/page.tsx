@@ -36,7 +36,7 @@ const sendData = async () => {
     ...initialData,
     "use_public_transport": true,
   }; // make some changes
-  return fetch('http://localhost:8000/predict/set_state', {
+  return fetch('http://localhost:8001/predict/set_state', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

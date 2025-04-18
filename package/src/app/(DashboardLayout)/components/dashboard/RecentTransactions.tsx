@@ -92,23 +92,24 @@ const RecentTransactions = () => {
 
   const submitCorrection = (index: number) => {
     if (!classifier || correction[index] === null) return;
-
+  
+    // 1. Boost confidence to 100% for the corrected category
+    setBoostedConfidence({ ...boostedConfidence, [index]: true });
+  
+    // 2. (Optional) Retrain classifier - UNCOMMENT THIS
     const tx = transactions[index];
-
-    // Retrain classifier with corrected data
     const newTrainingData = [
       ...trainingData,
       { text: tx.merchant.toLowerCase(), category: correction[index]! },
     ];
-
-    // const updatedClassifier = new NaiveBayesClassifier(newTrainingData);
-    // setClassifier(updatedClassifier);
-
-    // Reset feedback state
+    const updatedClassifier = new NaiveBayesClassifier(newTrainingData);
+    setClassifier(updatedClassifier);
+  
+    // 3. Reset feedback UI states
     const newFeedback = { ...feedback };
     delete newFeedback[index];
     setFeedback(newFeedback);
-
+  
     const newCorrection = { ...correction };
     delete newCorrection[index];
     setCorrection(newCorrection);

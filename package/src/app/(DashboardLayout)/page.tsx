@@ -7,16 +7,20 @@ import YearlyBreakup from "@/app/(DashboardLayout)/components/dashboard/YearlyBr
 import RecentTransactions from "@/app/(DashboardLayout)/components/dashboard/RecentTransactions";
 import MonthlyEarnings from "@/app/(DashboardLayout)/components/dashboard/MonthlyEarnings";
 import ExpertRecommendations from "./components/dashboard/ExpertRecommendations";
+import TransactionHistory from "./components/dashboard/TransactionHistory";
+import { useState } from "react";
 
 const Dashboard = () => {
+  const [oMonth, setOMonth] = useState<number>(new Date().getMonth() + 1);
+  const [oYear, setOYear] = useState<number>(new Date().getFullYear());
   return (
     <PageContainer title="Dashboard" description="this is Dashboard">
       <Box>
         <Grid container spacing={3}>
-          <Grid item xs={12} lg={8}>
-            <SalesOverview />
+          <Grid item xs={12} lg={12}>
+            <TransactionHistory userId={6} />
           </Grid>
-          <Grid item xs={12} lg={4}>
+          {/* <Grid item xs={12} lg={4}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <YearlyBreakup />
@@ -25,7 +29,7 @@ const Dashboard = () => {
                 <MonthlyEarnings />
               </Grid>
             </Grid>
-          </Grid>
+          </Grid> */}
           <Grid item xs={12} lg={6}>
             <RecentTransactions />
           </Grid>
